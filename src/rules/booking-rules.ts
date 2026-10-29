@@ -1,4 +1,9 @@
-import { INVALID_NPI } from "./errors.js";
+import { getBeninDayOfWeek, parseBeninDateTime } from "./date-time.js";
+import {
+  INVALID_DATE_TIME,
+  INVALID_NPI,
+  WEEKEND_CLOSED,
+} from "./errors.js";
 import type { RuleResult } from "./types.js";
 
 const VALID_NPI_PATTERN = /^[0-9]{10}$/;
@@ -6,6 +11,22 @@ const VALID_NPI_PATTERN = /^[0-9]{10}$/;
 export function validateNpi(npi: unknown): RuleResult {
   if (typeof npi !== "string" || !VALID_NPI_PATTERN.test(npi)) {
     return INVALID_NPI;
+  }
+
+  return { ok: true };
+}
+
+export function validateOpeningDay(dateTime: unknown): RuleResult {
+  const parsedDateTime = parseBeninDateTime(dateTime);
+  if (parsedDateTime === null) {
+    return INVALID_DATE_TIME;
+  }
+
+  const dayOfWeek = getBeninDayOfWeek(parsedDateTime);
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+  if (isWeekend) {
+    return WEEKEND_CLOSED;
   }
 
   return { ok: true };

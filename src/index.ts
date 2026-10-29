@@ -1,4 +1,7 @@
-export { validateNpi } from "./rules/booking-rules.js";
+export {
+  validateNpi,
+  validateOpeningDay,
+} from "./rules/booking-rules.js";
 export type {
   HttpStatus,
   RuleFailure,
