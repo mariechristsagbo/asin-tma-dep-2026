@@ -1,13 +1,21 @@
-import { getBeninDayOfWeek, parseBeninDateTime } from "./date-time.js";
 import {
+  getBeninDayOfWeek,
+  getBeninMinutesSinceMidnight,
+  parseBeninDateTime,
+} from "./date-time.js";
+import {
+  APPOINTMENT_IN_PAST,
   INVALID_DATE_TIME,
   INVALID_NPI,
+  INVALID_TIME_SLOT,
   SLOT_FULL,
   UNKNOWN_SERVICE,
   UPCOMING_APPOINTMENT_EXISTS,
   WEEKEND_CLOSED,
 } from "./errors.js";
 import type {
+  BookingContext,
+  BookingRequest,
   RuleResult,
   Service,
   SlotAppointment,
@@ -15,6 +23,9 @@ import type {
 } from "./types.js";
 
 const VALID_NPI_PATTERN = /^[0-9]{10}$/;
+const FIRST_SLOT_MINUTES = 8 * 60;
+const LAST_SLOT_MINUTES = 15 * 60 + 30;
+const SLOT_DURATION_MINUTES = 30;
 
 export function validateNpi(npi: unknown): RuleResult {
   if (typeof npi !== "string" || !VALID_NPI_PATTERN.test(npi)) {
@@ -52,6 +63,42 @@ export function validateOpeningDay(dateTime: unknown): RuleResult {
   return { ok: true };
 }
 
+export function validateFutureDate(
+  dateTime: unknown,
+  currentTime: Date,
+): RuleResult {
+  const parsedDateTime = parseBeninDateTime(dateTime);
+  if (parsedDateTime === null) {
+    return INVALID_DATE_TIME;
+  }
+
+  if (parsedDateTime.getTime() < currentTime.getTime()) {
+    return APPOINTMENT_IN_PAST;
+  }
+
+  return { ok: true };
+}
+
+export function validateTimeSlot(dateTime: unknown): RuleResult {
+  const parsedDateTime = parseBeninDateTime(dateTime);
+  if (parsedDateTime === null) {
+    return INVALID_DATE_TIME;
+  }
+
+  const minutesSinceMidnight = getBeninMinutesSinceMidnight(parsedDateTime);
+  const isWithinOpeningHours =
+    minutesSinceMidnight >= FIRST_SLOT_MINUTES &&
+    minutesSinceMidnight <= LAST_SLOT_MINUTES;
+  const isOnHalfHourGrid =
+    minutesSinceMidnight % SLOT_DURATION_MINUTES === 0;
+
+  if (!isWithinOpeningHours || !isOnHalfHourGrid) {
+    return INVALID_TIME_SLOT;
+  }
+
+  return { ok: true };
+}
+
 export function validateSlotCapacity(
   appointmentsInSlot: readonly SlotAppointment[],
 ): RuleResult {
@@ -82,4 +129,24 @@ export function validateNoUpcomingAppointment(
   }
 
   return { ok: true };
+}
+
+export function validateBooking(
+  request: BookingRequest,
+  context: BookingContext,
+): RuleResult {
+  const validations = [
+    validateNpi(request.npi),
+    validateService(request.service),
+    validateFutureDate(request.dateTime, context.currentTime),
+    validateOpeningDay(request.dateTime),
+    validateTimeSlot(request.dateTime),
+    validateNoUpcomingAppointment(
+      context.userAppointments,
+      context.currentTime,
+    ),
+    validateSlotCapacity(context.appointmentsInSlot),
+  ];
+
+  return validations.find((result) => !result.ok) ?? { ok: true };
 }

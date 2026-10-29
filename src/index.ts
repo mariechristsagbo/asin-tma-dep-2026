@@ -1,9 +1,12 @@
 export {
+  validateBooking,
+  validateFutureDate,
   validateNpi,
   validateNoUpcomingAppointment,
   validateOpeningDay,
   validateService,
   validateSlotCapacity,
+  validateTimeSlot,
 } from "./rules/booking-rules.js";
 export { sortAndPaginateAppointments } from "./rules/appointment-list.js";
 export { validateCancellation } from "./rules/cancellation-rules.js";
@@ -13,6 +16,8 @@ export type {
   AppointmentPage,
   AppointmentStatus,
   AttendanceStatus,
+  BookingContext,
+  BookingRequest,
   HttpStatus,
   RuleFailure,
   RuleResult,

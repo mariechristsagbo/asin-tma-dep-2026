@@ -24,7 +24,7 @@ export function parseBeninDateTime(value: unknown): Date | null {
   const localComponentsAsUtc = new Date(
     Date.UTC(year, month - 1, day, hour, minute),
   );
-  
+
   const hasValidComponents =
     localComponentsAsUtc.getUTCFullYear() === year &&
     localComponentsAsUtc.getUTCMonth() === month - 1 &&
@@ -42,4 +42,10 @@ export function parseBeninDateTime(value: unknown): Date | null {
 
 export function getBeninDayOfWeek(dateTime: Date): number {
   return new Date(dateTime.getTime() + BENIN_UTC_OFFSET_MS).getUTCDay();
+}
+
+export function getBeninMinutesSinceMidnight(dateTime: Date): number {
+  const beninDateTime = new Date(dateTime.getTime() + BENIN_UTC_OFFSET_MS);
+
+  return beninDateTime.getUTCHours() * 60 + beninDateTime.getUTCMinutes();
 }

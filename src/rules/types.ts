@@ -37,3 +37,15 @@ export type AppointmentPage<T extends Appointment> = Readonly<{
   total: number;
   appointments: readonly T[];
 }>;
+
+export type BookingRequest = Readonly<{
+  npi: unknown;
+  service: unknown;
+  dateTime: unknown;
+}>;
+
+export type BookingContext = Readonly<{
+  currentTime: Date;
+  userAppointments: readonly UserAppointment[];
+  appointmentsInSlot: readonly SlotAppointment[];
+}>;

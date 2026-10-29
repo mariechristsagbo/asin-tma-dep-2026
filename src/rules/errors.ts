@@ -18,10 +18,22 @@ export const INVALID_DATE_TIME = {
   message: "Date et heure invalides (format attendu : AAAA-MM-JJTHH:MM).",
 } as const satisfies RuleFailure;
 
+export const APPOINTMENT_IN_PAST = {
+  ok: false,
+  httpStatus: 409,
+  message: "Impossible de prendre un rendez-vous dans le passé.",
+} as const satisfies RuleFailure;
+
 export const WEEKEND_CLOSED = {
   ok: false,
   httpStatus: 409,
   message: "Le centre est fermé le week-end.",
+} as const satisfies RuleFailure;
+
+export const INVALID_TIME_SLOT = {
+  ok: false,
+  httpStatus: 409,
+  message: "Créneau invalide : de 08:00 à 15:30, toutes les 30 minutes.",
 } as const satisfies RuleFailure;
 
 export const SLOT_FULL = {
