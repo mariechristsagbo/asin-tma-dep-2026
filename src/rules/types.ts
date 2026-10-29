@@ -28,3 +28,10 @@ export type Appointment = Readonly<{
 export type SlotAppointment = Pick<Appointment, "status">;
 
 export type UserAppointment = Appointment;
+
+export type AppointmentPage<T extends Appointment> = Readonly<{
+  page: number;
+  perPage: 10;
+  total: number;
+  appointments: readonly T[];
+}>;
