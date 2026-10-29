@@ -23,3 +23,9 @@ export const SLOT_FULL = {
   httpStatus: 409,
   message: "Ce créneau est complet.",
 } as const satisfies RuleFailure;
+
+export const UPCOMING_APPOINTMENT_EXISTS = {
+  ok: false,
+  httpStatus: 409,
+  message: "Vous avez déjà un rendez-vous à venir.",
+} as const satisfies RuleFailure;

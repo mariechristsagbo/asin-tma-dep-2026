@@ -3,9 +3,14 @@ import {
   INVALID_DATE_TIME,
   INVALID_NPI,
   SLOT_FULL,
+  UPCOMING_APPOINTMENT_EXISTS,
   WEEKEND_CLOSED,
 } from "./errors.js";
-import type { RuleResult, SlotAppointment } from "./types.js";
+import type {
+  RuleResult,
+  SlotAppointment,
+  UserAppointment,
+} from "./types.js";
 
 const VALID_NPI_PATTERN = /^[0-9]{10}$/;
 
@@ -43,6 +48,23 @@ export function validateSlotCapacity(
 
   if (occupiedPlaces >= 3) {
     return SLOT_FULL;
+  }
+
+  return { ok: true };
+}
+
+export function validateNoUpcomingAppointment(
+  userAppointments: readonly UserAppointment[],
+  currentTime: Date,
+): RuleResult {
+  const hasUpcomingAppointment = userAppointments.some(
+    (appointment) =>
+      appointment.status !== "annule" &&
+      appointment.dateTime.getTime() > currentTime.getTime(),
+  );
+
+  if (hasUpcomingAppointment) {
+    return UPCOMING_APPOINTMENT_EXISTS;
   }
 
   return { ok: true };

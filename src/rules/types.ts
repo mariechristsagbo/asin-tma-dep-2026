@@ -21,3 +21,8 @@ export type AppointmentStatus =
 export type SlotAppointment = Readonly<{
   status: AppointmentStatus;
 }>;
+
+export type UserAppointment = SlotAppointment &
+  Readonly<{
+    dateTime: Date;
+  }>;
