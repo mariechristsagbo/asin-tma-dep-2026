@@ -18,6 +18,8 @@ export type AppointmentStatus =
   | "absent"
   | "annule";
 
+export type AttendanceStatus = "honore" | "absent";
+
 export type Appointment = Readonly<{
   status: AppointmentStatus;
   dateTime: Date;

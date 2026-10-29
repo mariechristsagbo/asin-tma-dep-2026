@@ -41,3 +41,15 @@ export const CANCELLATION_TOO_LATE = {
   httpStatus: 409,
   message: "Annulation impossible moins de 24 h avant le rendez-vous.",
 } as const satisfies RuleFailure;
+
+export const INVALID_ATTENDANCE_STATUS = {
+  ok: false,
+  httpStatus: 400,
+  message: "Statut invalide : honore ou absent.",
+} as const satisfies RuleFailure;
+
+export const APPOINTMENT_ALREADY_CLOSED = {
+  ok: false,
+  httpStatus: 409,
+  message: "Ce rendez-vous est déjà clôturé.",
+} as const satisfies RuleFailure;
