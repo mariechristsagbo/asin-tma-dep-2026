@@ -1,5 +1,7 @@
 export type HttpStatus = 400 | 409;
 
+export type Service = "PASSEPORT" | "CNI" | "PERMIS";
+
 export type RuleSuccess = Readonly<{
   ok: true;
 }>;

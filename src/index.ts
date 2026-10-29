@@ -2,6 +2,7 @@ export {
   validateNpi,
   validateNoUpcomingAppointment,
   validateOpeningDay,
+  validateService,
   validateSlotCapacity,
 } from "./rules/booking-rules.js";
 export { sortAndPaginateAppointments } from "./rules/appointment-list.js";
@@ -16,6 +17,7 @@ export type {
   RuleFailure,
   RuleResult,
   RuleSuccess,
+  Service,
   SlotAppointment,
   UserAppointment,
 } from "./rules/types.js";

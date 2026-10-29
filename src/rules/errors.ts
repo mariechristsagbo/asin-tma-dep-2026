@@ -6,6 +6,12 @@ export const INVALID_NPI = {
   message: "Le NPI doit comporter exactement 10 chiffres.",
 } as const satisfies RuleFailure;
 
+export const UNKNOWN_SERVICE = {
+  ok: false,
+  httpStatus: 400,
+  message: "Service inconnu : choisissez PASSEPORT, CNI ou PERMIS.",
+} as const satisfies RuleFailure;
+
 export const INVALID_DATE_TIME = {
   ok: false,
   httpStatus: 400,

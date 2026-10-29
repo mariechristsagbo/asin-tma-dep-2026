@@ -3,11 +3,13 @@ import {
   INVALID_DATE_TIME,
   INVALID_NPI,
   SLOT_FULL,
+  UNKNOWN_SERVICE,
   UPCOMING_APPOINTMENT_EXISTS,
   WEEKEND_CLOSED,
 } from "./errors.js";
 import type {
   RuleResult,
+  Service,
   SlotAppointment,
   UserAppointment,
 } from "./types.js";
@@ -17,6 +19,18 @@ const VALID_NPI_PATTERN = /^[0-9]{10}$/;
 export function validateNpi(npi: unknown): RuleResult {
   if (typeof npi !== "string" || !VALID_NPI_PATTERN.test(npi)) {
     return INVALID_NPI;
+  }
+
+  return { ok: true };
+}
+
+function isService(value: unknown): value is Service {
+  return value === "PASSEPORT" || value === "CNI" || value === "PERMIS";
+}
+
+export function validateService(service: unknown): RuleResult {
+  if (!isService(service)) {
+    return UNKNOWN_SERVICE;
   }
 
   return { ok: true };
