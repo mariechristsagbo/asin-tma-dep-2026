@@ -18,11 +18,11 @@ export type AppointmentStatus =
   | "absent"
   | "annule";
 
-export type SlotAppointment = Readonly<{
+export type Appointment = Readonly<{
   status: AppointmentStatus;
+  dateTime: Date;
 }>;
 
-export type UserAppointment = SlotAppointment &
-  Readonly<{
-    dateTime: Date;
-  }>;
+export type SlotAppointment = Pick<Appointment, "status">;
+
+export type UserAppointment = Appointment;

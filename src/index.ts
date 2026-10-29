@@ -4,7 +4,9 @@ export {
   validateOpeningDay,
   validateSlotCapacity,
 } from "./rules/booking-rules.js";
+export { validateCancellation } from "./rules/cancellation-rules.js";
 export type {
+  Appointment,
   AppointmentStatus,
   HttpStatus,
   RuleFailure,

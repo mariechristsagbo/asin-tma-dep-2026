@@ -29,3 +29,15 @@ export const UPCOMING_APPOINTMENT_EXISTS = {
   httpStatus: 409,
   message: "Vous avez déjà un rendez-vous à venir.",
 } as const satisfies RuleFailure;
+
+export const APPOINTMENT_CANNOT_BE_CANCELLED = {
+  ok: false,
+  httpStatus: 409,
+  message: "Ce rendez-vous ne peut plus être annulé.",
+} as const satisfies RuleFailure;
+
+export const CANCELLATION_TOO_LATE = {
+  ok: false,
+  httpStatus: 409,
+  message: "Annulation impossible moins de 24 h avant le rendez-vous.",
+} as const satisfies RuleFailure;
