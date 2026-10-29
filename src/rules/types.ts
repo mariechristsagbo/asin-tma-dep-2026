@@ -11,3 +11,13 @@ export type RuleFailure = Readonly<{
 }>;
 
 export type RuleResult = RuleSuccess | RuleFailure;
+
+export type AppointmentStatus =
+  | "confirme"
+  | "honore"
+  | "absent"
+  | "annule";
+
+export type SlotAppointment = Readonly<{
+  status: AppointmentStatus;
+}>;

@@ -2,9 +2,10 @@ import { getBeninDayOfWeek, parseBeninDateTime } from "./date-time.js";
 import {
   INVALID_DATE_TIME,
   INVALID_NPI,
+  SLOT_FULL,
   WEEKEND_CLOSED,
 } from "./errors.js";
-import type { RuleResult } from "./types.js";
+import type { RuleResult, SlotAppointment } from "./types.js";
 
 const VALID_NPI_PATTERN = /^[0-9]{10}$/;
 
@@ -27,6 +28,21 @@ export function validateOpeningDay(dateTime: unknown): RuleResult {
 
   if (isWeekend) {
     return WEEKEND_CLOSED;
+  }
+
+  return { ok: true };
+}
+
+export function validateSlotCapacity(
+  appointmentsInSlot: readonly SlotAppointment[],
+): RuleResult {
+  const activeAppointments = appointmentsInSlot.filter(
+    (appointment) => appointment.status !== "annule",
+  );
+  const occupiedPlaces = activeAppointments.length;
+
+  if (occupiedPlaces >= 3) {
+    return SLOT_FULL;
   }
 
   return { ok: true };

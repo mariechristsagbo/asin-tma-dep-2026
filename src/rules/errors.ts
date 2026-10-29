@@ -17,3 +17,9 @@ export const WEEKEND_CLOSED = {
   httpStatus: 409,
   message: "Le centre est fermé le week-end.",
 } as const satisfies RuleFailure;
+
+export const SLOT_FULL = {
+  ok: false,
+  httpStatus: 409,
+  message: "Ce créneau est complet.",
+} as const satisfies RuleFailure;
