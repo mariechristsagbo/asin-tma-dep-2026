@@ -248,3 +248,137 @@ Le comportement de TMA-107 est conforme à la règle. Il ne nécessite donc
 aucune correction. Un test de non-régression devra néanmoins vérifier qu'un
 usager possédant déjà un rendez-vous à venir ne peut pas en prendre un autre,
 même pour un service différent.
+
+## 3. Module de règles de gestion
+
+Le module est indépendant de toute base de données et de tout framework. Il
+reçoit les données nécessaires en paramètres et ne lit jamais directement
+l'horloge de la machine.
+
+Ses quatre opérations principales sont :
+
+| Fonction | Responsabilité |
+| --- | --- |
+| `validateBooking` | Contrôler une demande de rendez-vous complète. |
+| `validateCancellation` | Contrôler le statut et le délai d'annulation. |
+| `validateStatusChange` | Contrôler une transition vers `honore` ou `absent`. |
+| `sortAndPaginateAppointments` | Trier la liste complète puis retourner une page de dix éléments. |
+
+`validateBooking` applique les contrôles dans l'ordre suivant : NPI, service,
+date lisible, date future, jour d'ouverture, grille horaire, rendez-vous à
+venir de l'usager, puis capacité du créneau. La première erreur rencontrée est
+retournée avec le code HTTP et le message prévus.
+
+Le contrôle de capacité est une règle pure fondée sur l'état reçu. Dans une
+application en production, la lecture du nombre de places et l'insertion du
+rendez-vous doivent également être protégées par une transaction ou un
+verrouillage adapté afin d'empêcher deux réservations concurrentes de dépasser
+la capacité.
+
+## 4. Tests automatisés
+
+### Installation et exécution
+
+```bash
+npm ci
+npm test
+```
+
+La vérification statique TypeScript s'exécute séparément :
+
+```bash
+npm run build
+```
+
+### Correspondance entre les tickets et les tests
+
+| Ticket | Correction ou comportement préservé | Test |
+| --- | --- | --- |
+| TMA-101 | Refus des samedis et dimanches en heure du Bénin. | `tests/tickets/tma-101.test.ts` |
+| TMA-102 | Refus dès que trois rendez-vous non annulés occupent le créneau. | `tests/tickets/tma-102.test.ts` |
+| TMA-103 | Validation du NPI comme chaîne de dix chiffres. | `tests/tickets/tma-103.test.ts` |
+| TMA-104 | Comparaison exacte du délai restant avec 24 heures. | `tests/tickets/tma-104.test.ts` |
+| TMA-105 | Refus de toute transition depuis un statut définitif. | `tests/tickets/tma-105.test.ts` |
+| TMA-106 | Tri chronologique global avant la pagination. | `tests/tickets/tma-106.test.ts` |
+| TMA-107 | Refus d'un second rendez-vous futur, tous services confondus. | `tests/tickets/tma-107.test.ts` |
+
+Le fichier `tests/boundaries.test.ts` couvre également les bornes importantes :
+NPI avec zéro initial, créneaux de `08:00` et `15:30`, annulation à exactement
+24 heures, rendez-vous annulé libérant une place, statuts demandés et deuxième
+page de résultats.
+
+## 5. Requêtes d'impact
+
+Les requêtes du fichier `requetes.sql` sont écrites pour SQLite. Elles peuvent
+être exécutées sur l'export sans créer de fichier intermédiaire :
+
+```bash
+sqlite3 :memory: <<'SQL'
+.read data/base_rendez_vous.sql
+.read requetes.sql
+SQL
+```
+
+L'instant de référence est celui de l'export : le 20 novembre 2026 à 18 h,
+heure du Bénin.
+
+### Rendez-vous confirmés à venir programmés le week-end
+
+Cinq rendez-vous doivent faire l'objet d'une prise de contact :
+
+| Identifiant | NPI | Service | Date et heure |
+| ---: | --- | --- | --- |
+| 680 | 0669147625 | PASSEPORT | 21/11/2026 à 08:30 |
+| 730 | 0679617916 | CNI | 28/11/2026 à 09:00 |
+| 834 | 0610588823 | CNI | 05/12/2026 à 10:00 |
+| 857 | 0671987446 | PERMIS | 05/12/2026 à 10:00 |
+| 874 | 0648953073 | PASSEPORT | 12/12/2026 à 11:00 |
+
+### Créneaux comptant plus de trois rendez-vous non annulés
+
+Trois créneaux contiennent chacun quatre rendez-vous non annulés :
+
+| Créneau | Nombre |
+| --- | ---: |
+| 22/10/2026 à 10:30 | 4 |
+| 10/11/2026 à 09:00 | 4 |
+| 24/11/2026 à 14:00 | 4 |
+
+### Transitions depuis le statut annulé
+
+Quatre rendez-vous ont été modifiés après leur annulation :
+
+| Rendez-vous | Transition | Modification | Agent |
+| ---: | --- | --- | --- |
+| 208 | `annule -> honore` | 07/10/2026 à 10:20 | AG-01 |
+| 231 | `annule -> honore` | 15/10/2026 à 10:26 | AG-02 |
+| 262 | `annule -> absent` | 29/10/2026 à 10:21 | AG-03 |
+| 292 | `annule -> honore` | 12/11/2026 à 10:13 | AG-04 |
+
+## 6. Bonus - anomalies supplémentaires dans l'export
+
+### NPI de longueur incorrecte
+
+Deux rendez-vous possèdent un NPI de onze ou douze chiffres :
+
+| Identifiant | NPI | Date et heure | Statut |
+| ---: | --- | --- | --- |
+| 459 | 01234567890 | 20/10/2026 à 09:30 | absent |
+| 642 | 061425364711 | 03/11/2026 à 14:00 | honore |
+
+La règle `validateNpi` corrige ce défaut en exigeant exactement dix chiffres
+avant tout autre traitement.
+
+### Rendez-vous hors de la grille horaire
+
+Trois rendez-vous ont été enregistrés après le dernier créneau de 15 h 30 :
+
+| Identifiant | Date et heure | Statut |
+| ---: | --- | --- |
+| 490 | 27/10/2026 à 16:00 | honore |
+| 698 | 13/11/2026 à 16:30 | absent |
+| 842 | 08/12/2026 à 16:00 | confirme |
+
+Le rendez-vous no 842 est encore à venir à la date de l'export et doit faire
+l'objet d'une prise de contact. La règle `validateTimeSlot` impose désormais
+une heure comprise entre `08:00` et `15:30`, sur la grille de 30 minutes.
